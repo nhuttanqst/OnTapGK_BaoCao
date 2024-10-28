@@ -10,12 +10,11 @@ import {
 } from "react-native";
 import axios from "axios";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-import { TouchableOpacity, Dimensions } from "react-native";
+import { TouchableOpacity } from "react-native";
 
 export default function App() {
   const [categories, setCategories] = useState([]);
   const [locations, setLocations] = useState([]);
-  const screenWith = Dimensions.get("window").width;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -77,7 +76,7 @@ export default function App() {
           </View>
 
           <ScrollView
-            contentContainerStyle={{ paddingBottom: 140 }}
+            contentContainerStyle={{ paddingBottom: 100 }}
             style={styles.content}
           >
             <View>
@@ -94,12 +93,7 @@ export default function App() {
               <FlatList
                 data={categories}
                 renderItem={({ item }) => (
-                  <TouchableOpacity
-                    style={[
-                      styles.categoryItem,
-                      { width: (screenWith - 70) / 4 },
-                    ]}
-                  >
+                  <TouchableOpacity style={styles.categoryItem}>
                     <Image
                       style={{ width: 70, height: 70, borderRadius: 50 }}
                       source={{ uri: item.image }}
@@ -108,7 +102,11 @@ export default function App() {
                   </TouchableOpacity>
                 )}
                 keyExtractor={(item) => item.id}
-                numColumns={4}
+                contentContainerStyle={{
+                  flexDirection: "row",
+                  flexWrap: "wrap",
+                  justifyContent: "space-between",
+                }}
               />
             </View>
 
@@ -281,14 +279,10 @@ const styles = StyleSheet.create({
     width: 25,
     height: 25,
   },
-  categoryList: {
-    flexDirection: "row",
-  },
   categoryItem: {
     marginTop: 10,
-    alignItems: "center",
-    justifyContent: "space-between",
     marginBottom: 10,
+    alignItems: "center",
   },
   populationInfo: {
     flexDirection: "row",
