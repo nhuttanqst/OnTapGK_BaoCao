@@ -9,30 +9,59 @@ import {
   KeyboardAvoidingView,
   ScrollView,
 } from "react-native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CheckBox from "expo-checkbox";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
+import { useNavigation } from "@react-navigation/native";
+import axios from "axios";
+import validation from "../validation/SignupValidation";
 
-const Screen_03 = () => {
+const Screen_03 = ({ navigation }) => {
   const [checked, setChecked] = useState(false);
-  const [userName, setUserName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [type, setType] = useState(true);
+  const [values, setValues] = useState({
+    name: "",
+    email: "",
+    password: "",
+  });
+  const navigate = useNavigation();
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = () => {
+    setErrors(validation(values));
+    setIsSubmitting(true);
+  };
+
+  useEffect(() => {
+    if (
+      isSubmitting &&
+      errors.name === "" &&
+      errors.email === "" &&
+      errors.password === ""
+    ) {
+      axios
+        .post("http://localhost:8081/signup", values)
+        .then(() => {
+          alert("Created Account Successfully");
+          navigation.navigate("Screen_01");
+        })
+        .catch((err) => console.log(err))
+        .finally(() => setIsSubmitting(false));
+    } else setIsSubmitting(false);
+  }, [errors, isSubmitting, navigate, values]);
 
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={{ flex: 1 }}
     >
-      <ScrollView
-        contentContainerStyle={{ flexGrow: 1, backgroundColor: "#fff" }}
-      >
+      <ScrollView contentContainerStyle={{ flex: 1, backgroundColor: "#fff" }}>
         <View style={styles.container}>
           <View>
             <TouchableOpacity>
               <FontAwesome6
-                onPress={() => navigation.goBack()}
+                // onPress={() => navigation.goBack()}
                 name="arrow-left-long"
                 size={24}
                 color="#6c7474"
@@ -51,11 +80,17 @@ const Screen_03 = () => {
                 source={require("../assets/Data/codicon_account.png")}
               />
               <TextInput
-                value={userName}
-                onChangeText={(value) => setUserName(value)}
+                value={values.name}
+                onChangeText={(value) => {
+                  setValues({ ...values, name: value });
+                  console.log(values);
+                }}
                 style={styles.textInput}
                 placeholder="Enter your user name"
               />
+              {errors.name && (
+                <Text style={{ color: "red" }}>{errors.name}</Text>
+              )}
             </View>
             <View style={styles.groupInput}>
               <Image
@@ -63,11 +98,17 @@ const Screen_03 = () => {
                 source={require("../assets/Data/Vector.png")}
               />
               <TextInput
-                value={email}
-                onChangeText={(value) => setEmail(value)}
+                value={values.email}
+                onChangeText={(value) => {
+                  setValues({ ...values, email: value });
+                  console.log(values);
+                }}
                 style={styles.textInput}
                 placeholder="Enter your email address"
               />
+              {errors.email && (
+                <Text style={{ color: "red" }}>{errors.email}</Text>
+              )}
             </View>
             <View style={styles.groupInput}>
               <Image
@@ -75,12 +116,17 @@ const Screen_03 = () => {
                 source={require("../assets/Data/lock.png")}
               />
               <TextInput
-                value={password}
-                onChangeText={(value) => setPassword(value)}
+                value={values.password}
+                onChangeText={(value) =>
+                  setValues({ ...values, password: value })
+                }
                 style={styles.textInput}
                 secureTextEntry={type}
                 placeholder="Enter your password"
               />
+              {errors.password && (
+                <Text style={{ color: "red" }}>{errors.password}</Text>
+              )}
               <TouchableOpacity
                 style={styles.imageEye}
                 onPress={() => setType((prev) => !prev)}
@@ -104,7 +150,9 @@ const Screen_03 = () => {
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.button}>
               <View>
-                <Text style={styles.continue}>Continue</Text>
+                <Text onPress={() => handleSubmit()} style={styles.continue}>
+                  Continue
+                </Text>
               </View>
             </TouchableOpacity>
           </View>
@@ -181,5 +229,16 @@ const styles = StyleSheet.create({
     textAlign: "center",
     width: "100%",
     fontSize: 18,
+  },
+  buttonText: {
+    color: "#fff",
+    textAlign: "center",
+    fontSize: 16,
+  },
+  avatar: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    marginTop: 10,
   },
 });

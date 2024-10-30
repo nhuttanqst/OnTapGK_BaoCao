@@ -14,7 +14,7 @@ export default function App() {
       <SafeAreaView style={{ flex: 1 }}>
         <NavigationContainer>
           <Stack.Navigator
-            initialRouteName="Screen_01"
+            initialRouteName="Screen_03"
             screenOptions={{ headerShown: false }}
           >
             <Stack.Screen name="Screen_01" component={Screen_01} />

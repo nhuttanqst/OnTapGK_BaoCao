@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -6,18 +6,52 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
-  Modal,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import axios from "axios";
+import validation from "../validation/LoginValidation";
+import { useNavigation } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function LoginScreen() {
-  const [password, setPassword] = useState("");
-  const [email, setEmail] = useState("");
+  const [values, setValues] = useState({
+    email: "",
+    password: "",
+  });
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPasswordVisible, setPasswordVisible] = useState(false);
+  const navigation = useNavigation();
+
+  const handleSubmit = () => {
+    const validationErrors = validation(values);
+    setErrors(validationErrors);
+    setIsSubmitting(true);
+  };
 
   const toggleShowPassword = () => {
     setPasswordVisible(!isPasswordVisible);
   };
+
+  useEffect(() => {
+    if (isSubmitting && !errors.email && !errors.password) {
+      axios
+        .post("http://localhost:8081/login", values)
+        .then(async (res) => {
+          if (res.data === "Success") {
+            alert("Login Success");
+            await AsyncStorage.setItem("userEmail", values.email);
+            navigation.navigate("Screen_02");
+          } else {
+            alert("Invalid Email or Password");
+          }
+        })
+        .catch((err) => console.log(err))
+        .finally(() => setIsSubmitting(false));
+    } else {
+      setIsSubmitting(false);
+    }
+  }, [errors, isSubmitting, values, navigation]);
 
   return (
     <View style={styles.container}>
@@ -27,17 +61,14 @@ export default function LoginScreen() {
         color="black"
         style={styles.backIcon}
       />
-
       <View style={styles.logoContainer}>
         <Image
           source={require("../assets/Data/icon.png")}
           style={styles.logo}
         />
       </View>
-
       <Text style={styles.title}>Hello Again!</Text>
       <Text style={styles.subtitle}>Log into your account</Text>
-
       <View style={styles.inputContainer}>
         <Ionicons
           name="mail-outline"
@@ -50,10 +81,11 @@ export default function LoginScreen() {
           placeholder="Enter your email address"
           placeholderTextColor="#aaa"
           keyboardType="email-address"
-          onChangeText={setEmail}
+          value={values.email}
+          onChangeText={(value) => setValues({ ...values, email: value })}
         />
+        {errors.email && <Text style={styles.error}>{errors.email}</Text>}
       </View>
-
       <View style={styles.inputContainer}>
         <Ionicons
           name="lock-closed-outline"
@@ -66,9 +98,10 @@ export default function LoginScreen() {
           placeholder="Enter your password"
           placeholderTextColor="#aaa"
           secureTextEntry={!isPasswordVisible}
-          value={password}
-          onChangeText={setPassword}
+          value={values.password}
+          onChangeText={(value) => setValues({ ...values, password: value })}
         />
+        {errors.password && <Text style={styles.error}>{errors.password}</Text>}
         <TouchableOpacity onPress={toggleShowPassword}>
           <Ionicons
             name={isPasswordVisible ? "eye-off-outline" : "eye-outline"}
@@ -78,23 +111,17 @@ export default function LoginScreen() {
           />
         </TouchableOpacity>
       </View>
-
       <TouchableOpacity>
         <Text style={styles.forgotPassword}>Forgot password?</Text>
       </TouchableOpacity>
-
-      <View style={styles.bottomContainer}>
-        <TouchableOpacity style={styles.continueButton}>
-          <Text style={styles.continueText}>Login</Text>
-        </TouchableOpacity>
-      </View>
-
+      <TouchableOpacity onPress={handleSubmit} style={styles.continueButton}>
+        <Text style={styles.continueText}>Login</Text>
+      </TouchableOpacity>
       <View style={styles.orContainer}>
         <View style={styles.line} />
         <Text style={styles.orText}>or</Text>
         <View style={styles.line} />
       </View>
-
       <View style={styles.socialContainer}>
         <TouchableOpacity style={styles.socialButton}>
           <Image
@@ -162,10 +189,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     marginBottom: 10,
   },
-  inputContainerFocused: {
-    borderColor: "#6C63FF",
-    borderWidth: 1,
-  },
   icon: {
     marginRight: 5,
   },
@@ -219,34 +242,11 @@ const styles = StyleSheet.create({
     width: 50,
     height: 44,
   },
-  modalContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-  },
-  modalContent: {
-    width: 300,
-    padding: 20,
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    alignItems: "center",
-  },
-  modalText: {
-    marginBottom: 20,
-    textAlign: "center",
-  },
-  modalButton: {
-    backgroundColor: "#0099FF",
-    borderRadius: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-  },
-  modalButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-  },
   bottomContainer: {
     marginBottom: 20,
+  },
+  error: {
+    color: "red",
+    marginLeft: 5,
   },
 });

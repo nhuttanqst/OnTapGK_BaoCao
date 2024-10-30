@@ -10,10 +10,13 @@ import {
 } from "react-native";
 import axios from "axios";
 import { TouchableOpacity } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Screen_02 = () => {
   const [categories, setCategories] = useState([]);
   const [locations, setLocations] = useState([]);
+  const [userName, setUserName] = useState("");
+  const [avatar, setAvatar] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -31,6 +34,32 @@ const Screen_02 = () => {
       }
     };
     fetchData();
+  }, []);
+
+  useEffect(() => {
+    const fetchUserName = async () => {
+      try {
+        const email = await AsyncStorage.getItem("userEmail");
+        console.log("Fetched email from AsyncStorage:", email);
+        if (email) {
+          const response = await axios.get(
+            `http://localhost:8081/user/${email}`
+          );
+          console.log("Response from server:", response.data);
+          if (response.data !== "User not found") {
+            setUserName(response.data.name);
+            setAvatar(response.data.avatar);
+          } else {
+            console.error("User not found for email:", email);
+          }
+        } else {
+          console.error("No email found in AsyncStorage");
+        }
+      } catch (error) {
+        console.error("Error fetching user name:", error);
+      }
+    };
+    fetchUserName();
   }, []);
 
   return (
@@ -60,7 +89,7 @@ const Screen_02 = () => {
             />
             <View>
               <Text style={styles.text1}>Welcome!</Text>
-              <Text style={styles.text2}>Donna Stroupe</Text>
+              <Text style={styles.text2}>{userName}</Text>
             </View>
           </View>
           <TouchableOpacity>
