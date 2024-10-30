@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   View,
   Text,
@@ -9,43 +9,11 @@ import {
   Modal,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
 
 export default function LoginScreen() {
-  const navigation = useNavigation();
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
   const [isPasswordVisible, setPasswordVisible] = useState(false);
-  const [passwordFocused, setPasswordFocused] = useState(false);
-  const [emailFocused, setEmailFocused] = useState(false);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [loginError, setLoginError] = useState("");
-
-  const users = [
-    { email: "ngonhuttan@gmail.com", password: "Tan123" },
-    { email: "account1@example.com", password: "account1" },
-    { email: "account2@example.com", password: "account2" },
-    { email: "account3@example.com", password: "account3" },
-    { email: "account4@example.com", password: "account4" },
-  ];
-
-  const handleLogin = () => {
-    if (!email || !password) {
-      setLoginError("Vui lòng nhập email và mật khẩu!");
-      setModalVisible(true);
-      return;
-    }
-
-    const user = users.find(
-      (user) => user.email === email && user.password === password
-    );
-    if (user) {
-      navigation.navigate("Electronics");
-    } else {
-      setLoginError("Email hoặc mật khẩu không đúng!");
-      setModalVisible(true);
-    }
-  };
 
   const toggleShowPassword = () => {
     setPasswordVisible(!isPasswordVisible);
@@ -70,12 +38,7 @@ export default function LoginScreen() {
       <Text style={styles.title}>Hello Again!</Text>
       <Text style={styles.subtitle}>Log into your account</Text>
 
-      <View
-        style={[
-          styles.inputContainer,
-          emailFocused && styles.inputContainerFocused,
-        ]}
-      >
+      <View style={styles.inputContainer}>
         <Ionicons
           name="mail-outline"
           size={20}
@@ -87,18 +50,11 @@ export default function LoginScreen() {
           placeholder="Enter your email address"
           placeholderTextColor="#aaa"
           keyboardType="email-address"
-          onFocus={() => setEmailFocused(true)}
-          onBlur={() => setEmailFocused(false)}
           onChangeText={setEmail}
         />
       </View>
 
-      <View
-        style={[
-          styles.inputContainer,
-          passwordFocused && styles.inputContainerFocused,
-        ]}
-      >
+      <View style={styles.inputContainer}>
         <Ionicons
           name="lock-closed-outline"
           size={20}
@@ -112,8 +68,6 @@ export default function LoginScreen() {
           secureTextEntry={!isPasswordVisible}
           value={password}
           onChangeText={setPassword}
-          onFocus={() => setPasswordFocused(true)}
-          onBlur={() => setPasswordFocused(false)}
         />
         <TouchableOpacity onPress={toggleShowPassword}>
           <Ionicons
@@ -130,28 +84,9 @@ export default function LoginScreen() {
       </TouchableOpacity>
 
       <View style={styles.bottomContainer}>
-        <TouchableOpacity onPress={handleLogin} style={styles.continueButton}>
+        <TouchableOpacity style={styles.continueButton}>
           <Text style={styles.continueText}>Login</Text>
         </TouchableOpacity>
-
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={modalVisible}
-          onRequestClose={() => setModalVisible(false)}
-        >
-          <View style={styles.modalContainer}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalText}>{loginError}</Text>
-              <TouchableOpacity
-                style={styles.modalButton}
-                onPress={() => setModalVisible(false)}
-              >
-                <Text style={styles.modalButtonText}>OK</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Modal>
       </View>
 
       <View style={styles.orContainer}>
